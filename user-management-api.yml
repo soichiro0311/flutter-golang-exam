@@ -1,0 +1,57 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: go_flutter_exam User
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080/api/
+paths:
+  /users:
+    get:
+      summary: get all user information
+      tags:
+        - users
+      parameters: []
+      responses:
+        '200':
+          description: return user information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /user/add:
+    post:
+      summary: Create a new User
+      tags:
+        - addUser
+      parameters: []
+      requestBody: # リクエストボディ
+        description: user to create
+        content:
+          application/json:
+            schema: # POSTするオブジェクト
+              $ref: '#/components/schemas/User'
+            example:
+              name: Michel Roe 
+              age: 23
+      responses:
+        '201':
+          description: CREATED
+
+components:
+  schemas:
+    User:
+      required:
+        - name
+        - age
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+          format: int64
