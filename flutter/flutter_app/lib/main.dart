@@ -10,9 +10,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: Colors.green,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'User Manager'),
     );
   }
 }
@@ -32,31 +32,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<User> _displayUsers = new List();
 
-  void _addUser() {
+  @override
+  void initState(){
+   super.initState();
+   _getUser();
+  }
+  void _addUserRequest(){
     var api = new AddUserApi();
     User user = new User(this._userName,this._userAge);
     api.userAddPost(user: user);
   }
 
-  void _getUser() {
-    var api = new UsersApi();
-    Future<List<User>> users = api.usersGet();
-    users.then((content) =>  setState(() {
-        this._displayUsers = content;
-    }));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new TextField(
+  void _addUser() {
+    showDialog(context: context,
+      builder: (BuildContext context) => Theme(
+        data: Theme.of(context).copyWith(dialogBackgroundColor: Colors.white),
+        child: SimpleDialog(title: Text("Register User"), children: <Widget>[
+          new TextField(
               decoration: new InputDecoration(labelText: "Enter register user name "),
               onChanged: (v) => this._userName = v,
             ),
@@ -65,13 +57,48 @@ class _MyHomePageState extends State<MyHomePage> {
               keyboardType: TextInputType.number,
               onChanged: (v) => this._userAge = int.parse(v),
             ),
-            Text(
-              '$_displayUsers',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
+            FloatingActionButton(
+              onPressed: _addUserRequest,
+              child: Text("register"),
+              shape: RoundedRectangleBorder(),
+              backgroundColor: Colors.green,
+            )
+        ],)
+      )
+    );
+  }
+
+  void _getUser() {
+    var api = new UsersApi();
+    Future<List<User>> users = api.usersGet();
+    users.then((content) =>  setState(() {
+        content.sort((a,b) => a.id.compareTo(b.id));
+        this._displayUsers = content;
+    }));
+  }
+
+  String formatUserData(User user){
+    return "ID:" + user.id + " NAME:" + user.name + " AGE:" + user.age.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
       ),
+      body: 
+        ListView.builder(
+          itemCount: this._displayUsers.length,
+          itemBuilder: (context, int index) {
+            return Card(
+              child: Padding(
+                child: Text(formatUserData(this._displayUsers.elementAt(index)), style: TextStyle(fontSize: 22.0),),
+                padding: EdgeInsets.all(20.0),
+              ),
+            );
+          },
+        ),
       floatingActionButton: Column(
         verticalDirection: VerticalDirection.up, // childrenの先頭を下に配置
         mainAxisSize: MainAxisSize.min,
